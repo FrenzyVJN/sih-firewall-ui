@@ -17,14 +17,15 @@ export default function Component() {
     setQuery(e.target.value)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     if (!query) return
 
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch('/api/gemma2', {
+      const res = await fetch('/api/firewall', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,20 +131,21 @@ export default function Component() {
           </Card>
         </div>
         
-        <div className="flex items-center bg-[#353535] rounded-md p-4 mt-8">
+        <form className="flex items-center bg-[#353535] rounded-md p-4 mt-8">
           <Input 
             placeholder="Add new firewall rule (e.g., Allow TCP 443 from Any to 10.0.0.2)" 
             value={query}
-            onChange={handleQueryChange}  
+            onChange={handleQueryChange}
+            
             className="flex-grow mr-4 bg-transparent text-white border-none placeholder-gray-400 text-lg"
           />
-          <Button variant="ghost" size="icon" className="text-white w-1/4" onClick={handleSubmit}>
+          <Button variant="ghost" size="icon" className="text-white w-1/4" onClick={handleSubmit} >
             {loading ? 'Setting up rules...' :<Plus className="h-6 w-6" />}
           </Button>
-        </div>
+        </form>
 
           {error && <p className="text-red-500 mt-2">{error}</p>}
-          {response && <div className="mt-4 text-white bg-[#353535] p-4 rounded">{response["response"]}</div>}
+          {response && <div className="mt-2 text-white bg-[#353535] p-4 rounded">{response["response"]}</div>}
       </div>
     </div>
   )
