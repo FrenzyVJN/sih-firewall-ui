@@ -8,6 +8,42 @@ import { Shield, Menu, HelpCircle, Monitor, Settings, ChevronRight, Plus, Globe,
 
 export default function Component() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [response, setResponse] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleQueryChange = (e) => {
+    setQuery(e.target.value)
+  }
+
+  const handleSubmit = async () => {
+    if (!query) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/gemma2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "prompt": query }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await res.json();
+      setResponse(data);
+    } catch (err) {
+      setError('Failed to fetch response from Gemma2.');
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="bg-[#D9D9D9] min-h-screen flex">
@@ -97,12 +133,17 @@ export default function Component() {
         <div className="flex items-center bg-[#353535] rounded-md p-4 mt-8">
           <Input 
             placeholder="Add new firewall rule (e.g., Allow TCP 443 from Any to 10.0.0.2)" 
+            value={query}
+            onChange={handleQueryChange}  
             className="flex-grow mr-4 bg-transparent text-white border-none placeholder-gray-400 text-lg"
           />
-          <Button variant="ghost" size="icon" className="text-white">
-            <Plus className="h-6 w-6" />
+          <Button variant="ghost" size="icon" className="text-white w-1/4" onClick={handleSubmit}>
+            {loading ? 'Setting up rules...' :<Plus className="h-6 w-6" />}
           </Button>
         </div>
+
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+          {response && <div className="mt-4 text-white bg-[#353535] p-4 rounded">{response["response"]}</div>}
       </div>
     </div>
   )
